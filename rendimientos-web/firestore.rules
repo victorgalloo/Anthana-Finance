@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.admin == true || 
+        request.auth.token.email == "admin@test.com"
+      );
+    }
+
+    match /users/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      // Temporal: permitir crear usuarios para debug
+      allow create: if isAdmin();
+    }
+
+    match /rendimientos/{docId} {
+      // Leer: el admin o el dueño (campo uid)
+      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      // Crear/Actualizar/Eliminar: solo admin
+      allow write: if isAdmin();
+    }
+  }
+}
