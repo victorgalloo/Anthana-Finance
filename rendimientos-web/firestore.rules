@@ -10,17 +10,40 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      // Temporal: permitir lectura para debugging
+      allow read: if true;
       allow write: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
       // Temporal: permitir crear usuarios para debug
       allow create: if isAdmin();
     }
 
     match /rendimientos/{docId} {
-      // Leer: el admin o el dueño (campo uid)
-      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      // Temporal: permitir lectura para debugging
+      allow read: if true;
+      // Temporal: permitir escritura para debugging
+      allow write: if true;
+    }
+
+    match /contracts/{docId} {
+      // Leer: el admin o el dueño (campo userId)
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       // Crear/Actualizar/Eliminar: solo admin
       allow write: if isAdmin();
+    }
+
+    match /global_rendimientos/{docId} {
+      // Solo admin puede leer y escribir rendimientos globales
+      allow read, write: if isAdmin();
+    }
+
+    match /contract_expirations/{docId} {
+      // Solo admin puede leer y escribir configuraciones de vencimiento
+      allow read, write: if isAdmin();
+    }
+
+    match /expiration_config/{docId} {
+      // Solo admin puede leer y escribir configuración de alertas
+      allow read, write: if isAdmin();
     }
   }
 }

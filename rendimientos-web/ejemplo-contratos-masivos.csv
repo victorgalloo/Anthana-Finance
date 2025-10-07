@@ -1,0 +1,6 @@
+userEmail,contractType,investmentAmount,startDate,expirationDate,rendimientoPct,rendimientoMxn,balance,plazoMeses,tipoPortafolio,rendimientoMensual,comisionRetiro,notas
+test1@gmail.com,Inversión Global - 2025-08 to 2025-10,200000,2025-08-01,2025-10-31,5.5,11000,211000,3,Conservador,1.8,2.5,Bonus trimestral
+test2@test.com,Inversión Global - 2025-08 to 2025-10,150000,2025-08-01,2025-10-31,4.2,6300,156300,3,Moderado,1.4,3.0,Promoción especial
+test3@gmail.com,Inversión Global - 2025-08 to 2025-10,300000,2025-08-01,2025-10-31,6.8,20400,320400,3,Agresivo,2.3,1.8,Cliente premium
+test4@test.com,Inversión Global - 2025-08 to 2025-10,100000,2025-08-01,2025-10-31,3.5,3500,103500,3,Conservador,1.2,4.0,Inversión inicial
+test5@gmail.com,Inversión Global - 2025-08 to 2025-10,250000,2025-08-01,2025-10-31,5.0,12500,262500,3,Moderado,1.7,2.5,Referido por cliente

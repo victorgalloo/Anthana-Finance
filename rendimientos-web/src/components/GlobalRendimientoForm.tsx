@@ -3,6 +3,7 @@ import { UserService } from '../services/userService';
 import { RendimientosService } from '../services/rendimientosService';
 import { PeriodRangePicker } from './PeriodRangePicker';
 import { DatePicker } from './DatePicker';
+import { UserSelector } from './UserSelector';
 
 interface GlobalRendimientoData {
   // Datos básicos de rendimiento
@@ -14,6 +15,7 @@ interface GlobalRendimientoData {
   notas: string;
   applyToAllUsers: boolean;
   applyToFutureUsers: boolean;
+  selectedUserIds: string[];
   
   // Parámetros de inversión
   plazoMeses: number;
@@ -40,6 +42,7 @@ export function GlobalRendimientoForm() {
     notas: '',
     applyToAllUsers: true,
     applyToFutureUsers: true,
+    selectedUserIds: [],
     
     // Parámetros de inversión
     plazoMeses: 6,
@@ -91,15 +94,35 @@ export function GlobalRendimientoForm() {
     setProcessedUsers([]);
 
     try {
-      // Obtener todos los usuarios
-      const usersResult = await UserService.getAllUsers();
+      // Determinar qué usuarios procesar
+      let usersToProcess: any[] = [];
       
-      if (!usersResult.success || !usersResult.data) {
-        setError('Error obteniendo lista de usuarios');
-        return;
+      if (globalData.applyToAllUsers) {
+        // Obtener todos los usuarios
+        const usersResult = await UserService.getAllUsers();
+        
+        if (!usersResult.success || !usersResult.data) {
+          setError('Error obteniendo lista de usuarios');
+          return;
+        }
+        
+        usersToProcess = usersResult.data;
+      } else {
+        // Usar solo los usuarios seleccionados
+        if (globalData.selectedUserIds.length === 0) {
+          setError('Debes seleccionar al menos un usuario o elegir "Aplicar a todos"');
+          return;
+        }
+        
+        const usersResult = await UserService.getAllUsers();
+        if (usersResult.success && usersResult.data) {
+          usersToProcess = usersResult.data.filter(user => 
+            globalData.selectedUserIds.includes(user.uid)
+          );
+        }
       }
 
-      const users = usersResult.data;
+      const users = usersToProcess;
       const successfulUsers: string[] = [];
       const failedUsers: string[] = [];
 
@@ -152,7 +175,7 @@ export function GlobalRendimientoForm() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="bg-white rounded-xl shadow-lg p-4 lg:p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4">
           Rendimiento Global
         </h3>
@@ -160,8 +183,8 @@ export function GlobalRendimientoForm() {
           Aplica un rendimiento, comisión, bonus o ajuste a todos los usuarios del sistema.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Período (YYYY-MM o rango) *
@@ -228,10 +251,10 @@ export function GlobalRendimientoForm() {
           </div>
 
           {/* Parámetros de Inversión */}
-          <div className="bg-blue-50 rounded-lg p-4">
+          <div className="bg-blue-50 rounded-lg p-4 lg:p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Parámetros de Inversión</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
               {/* Columna 1 */}
               <div className="space-y-4">
                 <div>
@@ -374,27 +397,33 @@ export function GlobalRendimientoForm() {
           </div>
 
           <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Opciones de Aplicación</h4>
-            <div className="space-y-2">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={globalData.applyToAllUsers}
-                  onChange={(e) => setGlobalData({...globalData, applyToAllUsers: e.target.checked})}
-                  className="mr-2"
-                />
-                <span className="text-sm text-blue-800">Aplicar a todos los usuarios existentes</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={globalData.applyToFutureUsers}
-                  onChange={(e) => setGlobalData({...globalData, applyToFutureUsers: e.target.checked})}
-                  className="mr-2"
-                />
-                <span className="text-sm text-blue-800">Aplicar automáticamente a usuarios futuros</span>
-              </label>
-            </div>
+            <h4 className="font-medium text-blue-900 mb-4">Selección de Usuarios</h4>
+            <UserSelector
+              selectedUsers={globalData.selectedUserIds}
+              onUsersChange={(userIds) => setGlobalData({...globalData, selectedUserIds: userIds})}
+              applyToAllUsers={globalData.applyToAllUsers}
+              onApplyToAllChange={(applyToAll) => setGlobalData({...globalData, applyToAllUsers: applyToAll})}
+            />
+          </div>
+
+          {/* Opción para usuarios futuros */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={globalData.applyToFutureUsers}
+                onChange={(e) => setGlobalData({...globalData, applyToFutureUsers: e.target.checked})}
+                className="mr-3 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+              />
+              <div>
+                <span className="text-sm font-medium text-green-900">
+                  Aplicar automáticamente a usuarios futuros
+                </span>
+                <p className="text-xs text-green-700 mt-1">
+                  Los nuevos usuarios que se registren también recibirán este rendimiento
+                </p>
+              </div>
+            </label>
           </div>
 
           <button
@@ -402,7 +431,10 @@ export function GlobalRendimientoForm() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-semibold"
           >
-            {loading ? 'Aplicando a todos los usuarios...' : 'Aplicar Rendimiento Global'}
+            {loading 
+              ? `Aplicando a ${globalData.applyToAllUsers ? 'todos los usuarios' : `${globalData.selectedUserIds.length} usuarios seleccionados`}...` 
+              : 'Aplicar Rendimiento Global'
+            }
           </button>
         </form>
 

@@ -5,6 +5,8 @@ import { UserService } from './userService';
 export interface CreateUserData {
   email: string;
   password: string;
+  displayName?: string;
+  phoneNumber?: string;
 }
 
 export interface CreateUserResult {
@@ -47,7 +49,8 @@ export class AdminAuthService {
       // Crear documento del usuario en Firestore
       const userResult = await UserService.createOrUpdateUser(newUser.uid, {
         email: newUser.email || '',
-        displayName: newUser.displayName || undefined,
+        displayName: userData.displayName || newUser.displayName || undefined,
+        phoneNumber: userData.phoneNumber || undefined,
       });
 
       if (!userResult.success) {

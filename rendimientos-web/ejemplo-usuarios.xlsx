@@ -1,0 +1,6 @@
+email,password,displayName,phoneNumber
+usuario1@test.com,password123,Juan Pérez,555-0001
+usuario2@test.com,password123,María García,555-0002
+usuario3@test.com,password123,Carlos López,555-0003
+usuario4@test.com,password123,Ana Martínez,555-0004
+usuario5@test.com,password123,Luis Rodríguez,555-0005
